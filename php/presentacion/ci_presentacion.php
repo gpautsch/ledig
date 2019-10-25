@@ -2,6 +2,9 @@
 include ('datos/dao_ledig.php');
 class ci_presentacion extends toba_ci
 {
+	//CONTROLADOR DE INTERFAZ: legajos (metadatos)
+
+	//Para guardar y aplicar las preferencias de filtro
 	protected $s__datos_filtro;
 
 
@@ -29,15 +32,11 @@ class ci_presentacion extends toba_ci
 	function conf__cuadro(toba_ei_cuadro $cuadro)
 	{
 		if (isset($this->s__datos_filtro)) {
-			//$cuadro->set_datos($this->dep('datos')->tabla('leg_presentaciones')->get_listado($this->s__datos_filtro));
 			$datos=$this->dep('datos')->tabla('leg_presentaciones')->get_listado($this->s__datos_filtro);
-			//echo ei_arbol($cuadro);
 			if (!empty($datos)) {
 				$cuadro->set_datos($this->creaLink($datos));
 			}
-		} else {
-			//$cuadro->set_datos($this->dep('datos')->tabla('leg_presentaciones')->get_listado());
-		}
+		} 
 	}
 
 	function evt__cuadro__eliminar($datos)
@@ -51,7 +50,6 @@ class ci_presentacion extends toba_ci
 	function evt__cuadro__seleccion($datos)
 	{
 		$this->dep('datos')->cargar($datos);
-		//echo ei_arbol($this->s__datos_filtro);
 		$this->set_pantalla('pant_edicion');
 	}
 
@@ -72,38 +70,53 @@ class ci_presentacion extends toba_ci
 
 	function evt__formulario__modificacion($datos)
 	{
+
 		$cohorte = dao_ledig::get_legajo_dni($datos['dni']);
-		//$server = toba::db('cfg_usuarios')->consultar("select sp_get_server()");
-		//echo ei_arbol($cohorte[0]['cohorte']);
-
 		if (is_array($datos['url_pdf'])) {
-
-		//$dni = toba::db('ledig')->consultar("select sp_dni_preinsc(" . $datos['dni'] . ")");
-		$stamp = toba::db('ledig')->consultar("SELECT nextval('leg_presentaciones_id_presentacion_seq') as now");
-		// Armo url + el sud dir cohorte y dni
+			// #Tarea 853
+			//Genera una marca con el proximo id de la tabla
+			$stamp = toba::db('ledig')->consultar("SELECT nextval('leg_presentaciones_id_presentacion_seq') as now");
+			// #Tarea 829
+			// Se arma url + el sud dir cohorte y dni
 		$url ='legajos/' .  $cohorte[0]['cohorte'] . '/' . $datos['dni'] . '/'; 
-		//echo ei_arbol($url);
-		//$datos['url_pdf']['name'] = $stamp[0]['now'] . "_" . $datos['url_pdf']['name'];
 		$datos['url_pdf']['name'] = $stamp[0]['now'] . "_" . $datos['url_pdf']['name'];
-		if (file_exists($url)) {  // Compruebo si existe el directorio en el Server
-			if (file_exists($url.$datos['url_pdf']['name'])) {  // Compruebo si existe el archivo
+		if (file_exists($url)) {  
+			if (file_exists($url.$datos['url_pdf']['name'])) {  
+				// Compruebo si existe el archivo
 				// Renombrar archivo existente para que pueda subir el nuevo
 				rename($url . $datos['url_pdf']['name'],$url . "_" . $datos['url_pdf']['name']);
 			} 
 		} else {
-			// el directorio no existe, debo crearlo
+			// Si el directorio no existe, lo crea
 			mkdir($url);
+			// Para crear el mismo directorio en el nodo Esclavo
+			//exec("ssh " . $serversede . " mkdir " . $fssede . $url);
 		}
-		//////  Antes debo preguntar si esta puesto el tilde en el upload
-			if (copy($datos['url_pdf']['tmp_name'] , $url . $datos['url_pdf']['name'])){
-				$datos["url_pdf"] = $url.$datos['url_pdf']['name'];
-				}
-			} else {
-		unset($datos["url_pdf"]); // PORQUE SINO ME GRABA NULL CUANDO NO MODIFICO EF_UPLOAD
+		// Realiza el upload del pdf al sistema de archivos
+		if (copy($datos['url_pdf']['tmp_name'] , $url . $datos['url_pdf']['name'])){
+			$datos["url_pdf"] = $url.$datos['url_pdf']['name'];
 			}
-	//echo ei_arbol($datos);
-	$this->dep('datos')->tabla('leg_presentaciones')->set($datos);
+		} else {
+			unset($datos["url_pdf"]);
+		}
+		$this->dep('datos')->tabla('leg_presentaciones')->set($datos);
 
+///-----Tareas #886-------------------
+/*
+		// EL COPIADO A LA SEDE SE DESHABILITA DEBIDO A LA DEMORA QUE GENERA
+//        exec("scp ". $origen . " " . $serversede . ":" . $origen,$aux1,$aux2);
+//        AGRAGADO PARA QUE SE ACTUALIZA EL FS EN NODO SD   
+		  $origen = $fssede . $url . $dni . $archsede;
+          if ($aux2 == 0) {
+//            $query = "UPDATE leg_presentaciones SET copydoc = 'true' where id_presentacion = " . $row[1];
+//             pg_query($query);
+//        }else {
+               $archivo = fopen("scriptFS.sh", "a");
+                fwrite($archivo, "scp ". $origen . " " . $serversede . ":" . $origen);
+                fclose($archivo);
+//                }
+**/
+///---------------------------
 	}
 
 	function resetear()
@@ -116,16 +129,11 @@ class ci_presentacion extends toba_ci
 
 	function evt__agregar()
 	{
-/*        if (isset($this->s__datos_filtro)) {
-			$this->dep('datos')->cargar($this->s__datos_filtro);
-		}
-*/        $this->set_pantalla('pant_edicion');
+        $this->set_pantalla('pant_edicion');
 	}
 
 	function evt__volver()
 	{
-		//$this->resetear();
-
 		toba::memoria()->set_dato_sincronizado($id_pre,$this->s__datos_filtro);
 		toba::vinculador()->navegar_a(toba::proyecto()->get_id(),'542000052');
 	}
@@ -144,61 +152,37 @@ class ci_presentacion extends toba_ci
 
 	function conf()
 	{
+		//#Tarea 853
+		// Mejora en la navegación cuando se va o vuelve de una pantalla Legajos,
+		// mantiene los datos anteriores en la pre visualización del cuadro
 		$dato = toba::memoria()->get_dato_sincronizado($id_pre);
-		//echo ei_arbol($dato);
-//        echo "****************  ". $thisdato['id_preinscripcion'] ."  ****<br>";
 		if (array_no_nulo($dato)) {
 			$this->s__datos_filtro = $dato;
 		}
 	}
-	function creaLink($datos) {
+	function creaLink($datos) { 
+			//#Tarea 887
+			//Genera el link al script descarga_doc para mostrar en el Cuadro
 			$j=0;
-			//$server = toba::db('ledig')->consultar("select sp_get_server()");
 			foreach($datos as $dato)        
 			{
-
-				//http://ledig.fce.unam.edu.ar/legajos/2017/25450352/2017-12-01%2010:25:02.122891+00_LEDIG%20MArce%20Pareyra.pdf
-
-				// RUTA A FILE SIN DOMINIO
-				//$path_comprobante_corto = $path_corto.'/'.$nombre_comprobante;
-
-				//$path_comprobante_corto = "legajos/2017/25450352/2017-12-01%2010:25:02.122891+00_LEDIG%20MArce%20Pareyra.pdf";
 				$path_comprobante_corto = $dato["url_pdf"];
-
-				// TOMA EL file.pdf
+				// Toma el nombre del archivo
 				$param = array('file'=> $path_comprobante_corto);
-				$url = toba::vinculador()->get_url('ledig', '542000059',$param);
-				// NOMBRE PARA MOSTRAR EN EL LINK
+				$url = toba::vinculador()->get_url('ledig', '3464',$param);
+				// Genera etiqueta para mostrar en el link
 				$nombre_comprobante = 'Comprobante:'.$dato["descripcion"];
 				$img = toba_recurso::imagen_proyecto('logo.gif',true,null,null,"Ver documento");
-				
-                $completo[$j]["url_pdf"]  = "<a href=# onclick='downloadDoc(\"$url\");return false;' target='_blank'>" . $dato["descripcion"] . '</a>';
-
-
-				$completo[$j]["id_presentacion"] = $dato["id_presentacion"];                
+						$completo[$j]["url_pdf"]  = "<a href=# onclick='downloadDoc(\"$url\");return false;' target='_blank'>" . $dato["descripcion"] . '</a>';
+				$completo[$j]["id_presentacion"] = $dato["id_presentacion"];
 				$completo[$j]["fecha"]         = $dato["fecha"];
 				$completo[$j]["dni"] = $dato["dni"];
 				$completo[$j]["copydoc"] = $dato["copydoc"];
 				$completo[$j]["depositario"] = $dato["depositario"];
-				//$url=$server[0]["sp_get_server"]. '/'.$dato["url_pdf"];
-				//$completo[$j]["url_pdf"] = '<a href="' . $url . '" target="_blank">' .$dato["descripcion"] . '</a>';
-//                $completo[$j]["url_pdf"] = '<a href="' . $url . '" target="_blank">' .$dato["url_pdf"] . '</a>';
-
-				$completo[$j]["firma"]         = $dato["firma"];
+				$completo[$j]["firma"] = $dato["firma"];
 				$j++;
 			}
 			return $completo;
-	}
-
-	//-----------------------------------------------------------------------------------
-	//---- cuadro -----------------------------------------------------------------------
-	//-----------------------------------------------------------------------------------
-
-	function evt__cuadro__cont_presentacion($seleccion)
-	{
-		//echo ei_arbol($seleccion);
-		toba::memoria()->set_dato_sincronizado($dni,$seleccion);
-		toba::vinculador()->navegar_a(toba::proyecto()->get_id(),'542000057');
 	}
 
 	//-----------------------------------------------------------------------------------
@@ -228,7 +212,6 @@ class ci_presentacion extends toba_ci
 
 	function evt__cuadro__copydoc($seleccion)
 	{
-
 		toba::db('ledig')->consultar("select sp_copydoc(" . $seleccion["id_presentacion"] . ")");
 		$this->set_pantalla('pant_seleccion');
 	}

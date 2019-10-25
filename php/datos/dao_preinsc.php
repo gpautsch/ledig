@@ -1,10 +1,11 @@
 <?php
 class dao_preinsc
 {
+	//MANEJADOR DE DATOS: preinscripciones
 
 	function get_regpre($idpre)
 	{
-		// Guardo en la variable $regpre  el registro de pre inscripcion seleccionado en el cuadro
+		// Retorna el registro de pre inscripcion seleccionado en el cuadro
 		return toba::db('preinsc_v270')->consultar("
 			SELECT 
 			  carrera, 
@@ -20,12 +21,11 @@ class dao_preinsc
 			WHERE 
 			  P.id_preinscripcion = C.id_preinscripcion 
 			  AND  P.id_preinscripcion = " . $idpre  );
-//		return $regpre;
 	}
 
 	function get_periodo_insc($carrera)
 	{
-		// Obtengo ultimo año de periodo de preinsc activo
+		// Obtiene el ultimo periodo de preinscripcion activo de esa $carrera
 		return toba::db('preinsc_v270')->consultar("
 			SELECT max(periodo_inscripcio) as periodo 
 			FROM sga_periodos_prein WHERE carrera = '" . $carrera . "'");

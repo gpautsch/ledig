@@ -2,6 +2,9 @@
 include ('datos/dao_ledig.php');
 class ci_pre_inscriptos extends toba_ci
 {
+	//CONTROLADOR DE INTERFAZ: pre_inscriptos
+
+	//Para guardar y aplicar las preferencias de filtro
 	protected $s__datos_filtro;
 
 
@@ -45,8 +48,6 @@ class ci_pre_inscriptos extends toba_ci
 
 	function evt__cuadro__import($seleccion)
 	{ 	
-		//echo ei_arbol($seleccion);
-		//echo $seleccion['id_preinscripcion'];
 		$import = dao_ledig::import_legajo($seleccion['id_preinscripcion']);
 		if ($import){
 			toba::notificacion()->info("El registro se importo con exito");
@@ -104,14 +105,13 @@ class ci_pre_inscriptos extends toba_ci
 
 	function conf()
 	{
+		//#Tarea 853
+		// Mejora en la navegación cuando se va o vuelve de una pantalla Legajos,
+		// mantiene los datos anteriores en la pre visualización del cuadro
 		$dato = toba::memoria()->get_dato_sincronizado($id_pre);
-		//echo ei_arbol($dato);
-//        echo "****************  ". $thisdato['id_preinscripcion'] ."  ****<br>";
 		if (array_no_nulo($dato)) {
 			$this->s__datos_filtro = $dato;
 		}
 	}
-
-
 }
 ?>

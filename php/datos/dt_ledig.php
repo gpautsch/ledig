@@ -1,8 +1,11 @@
 <?php
 class dt_ledig extends toba_datos_tabla
 {
+	//COMPONENTE DE INTERFAZ DATOS TABLA: ledig
+
 	function get_listado($filtro=array())
 	{
+		// Se establacen preferencias de filtro en $where 
 		$where = array();
 		if (isset($filtro['dni'])) {
 			$where[] = "dni = ".quote($filtro['dni']);
@@ -29,6 +32,7 @@ class dt_ledig extends toba_datos_tabla
 			INNER JOIN sga_carreras c ON c.carrera = t_l.carrera
 		ORDER BY legajo";
 		if (count($where)>0) {
+			// Concatena a la sql las preferencias de filtro
 			$sql = sql_concatenar_where($sql, $where);
 		}
 		return toba::db('ledig')->consultar($sql);
@@ -39,17 +43,6 @@ class dt_ledig extends toba_datos_tabla
 			$sql = "SELECT dni, legajo FROM ledig ORDER BY legajo";
 			return toba::db('ledig')->consultar($sql);
 		}
-
-
-
-
-
-
-
-
-
-
-
 
 }
 ?>

@@ -1,6 +1,7 @@
 <?php
 class dao_ledig
 {
+	//MANEJADOR DE DATOS: ledig
 
 	function get_carreras()
 	{
@@ -40,7 +41,11 @@ class dao_ledig
 	}
 
 	function import_legajo($idpre)
-	{
+	{	/* CON EL ID DEL REGISTRO DE PRE INSCRIPCION, RECUPERA EL MISMO 
+		   Y LO IMPORTA COMO METADATO A LA TABLA ledig
+		   SI EL REGISTRO SE IMPORTA CON EXITO RETORNA true
+		   SI EL REGISTRO YA SE IMPORTO, RETORNA false
+		**/
 		include ('datos/dao_preinsc.php');
 		// consigo registro de pre inscripcion
 		$regpre = dao_preinsc::get_regpre($idpre);

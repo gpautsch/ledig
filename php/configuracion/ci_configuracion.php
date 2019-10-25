@@ -1,6 +1,11 @@
 <?php
 class ci_configuracion extends ledig_ci
 {
+	// CONTROLADOR DE INTERFAZ: configuración
+	// #Tarea 853
+	// Se incorpora una Interfaz Configuración 
+	// posibilidad de cambiar parámetros de servidor del file system
+
 	function ini__operacion()
 	{
 		$this->dep('datos')->cargar();

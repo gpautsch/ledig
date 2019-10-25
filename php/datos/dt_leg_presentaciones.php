@@ -1,8 +1,11 @@
 <?php
 class dt_leg_presentaciones extends toba_datos_tabla
 {
+	//COMPONENTE DE INTERFAZ DATOS TABLA: presentaciones
+
 	function get_listado($filtro=array())
 	{
+		// Se establacen preferencias de filtro en $where 
 		$where = array();
 		if (isset($filtro['dni'])) {
 			$where[] = "dni = ".quote($filtro['dni']);
@@ -21,8 +24,9 @@ class dt_leg_presentaciones extends toba_datos_tabla
 			leg_presentaciones as t_lp
 		LEFT JOIN leg_depositarios D ON D.id_dep = t_lp.id_dep
 		LEFT JOIN leg_tipo_doc TD ON TD.tipo_doc = t_lp.id_tipo_doc
-			ORDER BY 1";
+		ORDER BY 1";
 		if (count($where)>0) {
+			// Concatena a la sql las preferencias de filtro
 			$sql = sql_concatenar_where($sql, $where);
 		}
 		return toba::db('ledig')->consultar($sql);

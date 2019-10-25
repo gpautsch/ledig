@@ -1,13 +1,13 @@
 <?php
 class dt_sga_preinscripcion extends toba_datos_tabla
 {
+	//COMPONENTE DE INTERFAZ DATOS TABLA: preinscripcion
 
-		function get_descripciones()
-		{
-			$sql = "SELECT id_preinscripcion, usuario FROM sga_preinscripcion ORDER BY usuario";
+	function get_descripciones()
+	{
+		$sql = "SELECT id_preinscripcion, usuario FROM sga_preinscripcion ORDER BY usuario";
 			return toba::db('ledig')->consultar($sql);
-		}
-
+	}
 
 	function get_nombre_presentacion()
 	{
@@ -20,14 +20,12 @@ class dt_sga_preinscripcion extends toba_datos_tabla
 		return toba::db('ledig')->consultar($sql);
 	}
 
-
-
-
 	function get_listado($filtro=array())
 	{
+		// Se establacen preferencias de filtro en $where
 		$where = array();
 		if (isset($filtro['carrera'])) {
-			$where[] = "carrera = ".quote($filtro['carrera']);
+			$where[] = "C.carrera = ".quote($filtro['carrera']);
 		}
 		if (isset($filtro['apellido'])) {
 			$where[] = "apellido ILIKE ".quote("%{$filtro['apellido']}%");
@@ -35,49 +33,26 @@ class dt_sga_preinscripcion extends toba_datos_tabla
 		if (isset($filtro['dni'])) {
 			$where[] = "nro_documento = ".quote($filtro['dni']);
 		}
-	
-
-				$sql= "SELECT
-						P.id_preinscripcion,
-						C.carrera,
-						A.nombre_reducido,
-						A.nombre,
-						P.estado,
-						apellido,
-						nombres,
-						P.tipo_documento,
-						nro_documento
-					FROM
-						sga_preinscripcion P 
-						LEFT JOIN sga_carreras_insc C ON P.id_preinscripcion = C.id_preinscripcion
-						LEFT JOIN sga_carreras A ON A.carrera = C.carrera
-					";
-	
-		
-		
-		
-/*        $sql= "SELECT
-			P.id_preinscripcion,
-			carrera,
-			P.estado,
-			apellido,
-			nombres,
-			P.tipo_documento,
-			nro_documento
+		$sql= "SELECT
+				P.id_preinscripcion,
+				C.carrera,
+				A.nombre_reducido,
+				A.nombre,
+				P.estado,
+				apellido,
+				nombres,
+				P.tipo_documento,
+				nro_documento
 			FROM
-				sga_preinscripcion P LEFT JOIN sga_carreras_insc C 
-				ON P.id_preinscripcion = C.id_preinscripcion";
-	*/      
-		
+				sga_preinscripcion P 
+				LEFT JOIN sga_carreras_insc C ON P.id_preinscripcion = C.id_preinscripcion
+				LEFT JOIN sga_carreras A ON A.carrera = C.carrera
+		";
 		if (count($where)>0) {
+			// Concatena a la sql las preferencias de filtro
 			$sql = sql_concatenar_where($sql, $where);
 		}
 		return toba::db('preinsc_v270')->consultar($sql);
 	}
-
-
-
-
-
 }
 ?>
