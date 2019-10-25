@@ -1,11 +1,11 @@
-# Código Fuente Sistema LeDig #
+# Código Fuente Sistema LeDig 
 
-Tesis de Maestría en Tecnologías de la Información
+##Tesis de Maestría en Tecnologías de la Información
 
-Replicación de datos para dar soporte al Programa de Expansión Territorial de la Universidad Nacional de Misiones
-Caso de validación: Legajo Digital de la Facultad de Ciencias Económicas (LeDig)
+#Replicación de datos para dar soporte al Programa de Expansión Territorial de la Universidad Nacional de Misiones
+#Caso de validación: Legajo Digital de la Facultad de Ciencias Económicas (LeDig)
 
-##Autor: Lic. Jesús Germán Andrés Pautsch##
+##Autor: Lic. Jesús Germán Andrés Pautsch
 
 Director: Dr. Silvio Gonnet
 Co-Director: Dr. Eduardo Zamudio
